@@ -127,3 +127,38 @@ class powerUpManager(object):
             self.mult_passengers.remove(card.passenger)
         elif card.card == 'MULT_DELIVER_AT_COMPANY':
             self.mult_companies.remove(card.company)
+
+    def cardIsInDeck(self, powerUp, passenger=None, company=None):
+        powers = self.deckDict[powerUp]
+        if not powers:
+            return False
+
+        if powerUp == 'MULT_DELIVERING_PASSENGER':
+             for power in powers:
+                if power.passenger == passenger:
+                    return True
+             return False
+        elif powerUp == 'MULT_DELIVER_AT_COMPANY':
+            for power in powers:
+                if power.company == company:
+                    return True
+            return False
+        else:
+            return True
+
+    def cardIsInHand(self, powerUp, passenger=None, company=None):
+        for card in self.hand:
+            if card.card == powerUp:
+                if powerUp == 'MULT_DELIVERING_PASSENGER':
+                    if card.passenger == passenger:
+                        return True
+                elif powerUp == 'MULT_DELIVER_AT_COMPANY':
+                    if card.company == company:
+                        return True
+                else:
+                    return True
+        return False
+
+    def cardHasBeenPlayed(self, powerUp, passenger=None, company=None):
+        return not (self.cardIsInHand(powerUp, passenger, company) or
+                    self.cardIsInDeck(powerUp, passenger, company))
