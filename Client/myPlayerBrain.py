@@ -329,12 +329,11 @@ class MyPlayerBrain(object):
                 if player.limo.passenger is not None:
                     if player.limo.passenger in self.me.limo.passenger.enemies:
                         if player.limo.passenger.destination == self.me.limo.passenger.destination:
-                            # IF STOP_CAR
+                            if self.powerUpManager.deckDict['STOP_CAR']:
                                 self.powerUpManager.playPowerUp('STOP_CAR', player=player.guid)
-                            # ELSE
+                            else:
                                 self.powerUpManager.playPowerUp('CHANGE_DESTINATION', player=player.guid)
 
-        # CHECK: RELOCATE_ALL_CARS
         if self.limo.passenger is None:
             if self.closest_person['destination'].pointsDelivered == 1:
                 self.powerUpManager.playPowerUp('RELOCATE_ALL_CARS')
