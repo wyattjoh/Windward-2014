@@ -8,6 +8,7 @@
 """
 
 import random as rand
+import time
 import traceback
 import simpleAStar
 from framework import sendOrders, playerPowerSend
@@ -98,6 +99,8 @@ class MyPlayerBrain(object):
 
             ptDest = None
             pickup = []
+
+            path = None
             
             if status == "UPDATE":
                 self.maybePlayPowerUp()
@@ -127,9 +130,13 @@ class MyPlayerBrain(object):
             # coffee store override
             if(status == "PASSENGER_DELIVERED_AND_PICKED_UP" or status == "PASSENGER_DELIVERED" or status == "PASSENGER_ABANDONED"):
                 if(self.me.limo.coffeeServings <= 0):
-                    ptDest = rand.choice(self.stores).busStop
+                    closest_store = self.findClosestStore()
+                    ptDest = closest_store['destination']
+                    path = closest_store['path']
             elif(status == "PASSENGER_REFUSED_NO_COFFEE" or status == "PASSENGER_DELIVERED_AND_PICK_UP_REFUSED"):
-                ptDest = rand.choice(self.stores).busStop
+                closest_store = self.findClosestStore()
+                ptDest = closest_store['destination']
+                path = closest_store['path']
             elif(status == "COFFEE_STORE_CAR_RESTOCKED"):
                 pickup = self.allPickups(self.me, self.passengers)
                 if len(pickup) != 0:
@@ -141,12 +148,25 @@ class MyPlayerBrain(object):
             self.displayOrders(ptDest)
             
             # get the path from where we are to the dest.
-            path = self.calculatePathPlus1(self.me, ptDest)
+            if path is None:
+                path = self.calculatePathPlus1(self.me, ptDest)
 
             sendOrders(self, "move", path, pickup)
         except Exception as e:
             print traceback.format_exc()
             raise e
+
+    def computeDistance(self, ptDest):
+        path = self.calculatePathPlus1(self.me, ptDest.busStop)
+        return {'path': path, 'distance': len(path), 'destination': ptDest.busStop}
+
+    def findClosest(self, destinations):
+        destination_paths = [self.computeDistance(destination) for destination in destinations]
+        return min(destination_paths, key=lambda x: x['distance'])
+
+    def findClosestStore(self):
+        print "COFFEE <--------------------------"
+        return self.findClosest(self.stores)
 
     def displayOrders(self, ptDest):
         msg = None
