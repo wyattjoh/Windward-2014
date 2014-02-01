@@ -36,7 +36,7 @@ class powerUpManager(object):
             self.playCard(card)
             return
         elif powerUp == 'MULT_DELIVER_AT_COMPANY':
-            card = next([i for i in powers if i.company == company], None1)
+            card = next([i for i in powers if i.company == company], None)
             if not card:
                 return
             self.playCard(card)
