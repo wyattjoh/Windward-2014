@@ -21,6 +21,37 @@ class powerUpManager(object):
         for card in deck['MULT_DELIVER_AT_COMPANY']:
             self.mult_companies.append(card.company)
 
+    def playPowerUp(self, powerUp, passenger=None, player=None, company=None):
+        ''' 
+        Play the specified power up. If there are no cards, do nothing.
+        '''
+        powers = [card for card in self.hand if card.card == powerUp]
+        if not powers:
+            return
+
+        if powerUp == 'MULT_DELIVERING_PASSENGER':
+            card = next(i for i in powers if i.passenger == passenger, None)
+            if not card:
+                return
+            self.playCard(card)
+            return
+        elif powerUp == 'MULT_DELIVER_AT_COMPANY':
+            card = next(i for i in powers if i.company == company, None1)
+            if not card:
+                return
+            self.playCard(card)
+            return
+
+        card = powers[0]
+        if powerUp == 'MOVE_PASSENGER':
+            card.passenger = passenger
+            self.playCard(card)
+        elif powerUp == 'CHANGE_DESTINATION' or powerUp == 'STOP_CAR':
+            card.player = player
+            self.playCard(card)
+        else:
+            self.playCard(card)
+
     def drawPowerUp(self, powerUp, passenger=None, company=None):
         '''
         Attempt to draw the specified power up. If it is not in the deck,
