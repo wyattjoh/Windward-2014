@@ -40,7 +40,7 @@ class powerUpManager(object):
         elif powerUp == 'MULT_DELIVER_AT_COMPANY':
             card = None
             for power in powers:
-                if power.passenger == passenger:
+                if power.company == company:
                     card = power
                     break
             if not card:
@@ -80,7 +80,7 @@ class powerUpManager(object):
         elif powerUp == 'MULT_DELIVER_AT_COMPANY':
             card = None
             for power in powers:
-                if power.passenger == passenger:
+                if power.company == company:
                     card = power
                     break
             if not card:
