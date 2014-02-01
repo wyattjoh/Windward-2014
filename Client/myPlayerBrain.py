@@ -12,6 +12,7 @@ import time
 import traceback
 import simpleAStar
 from framework import sendOrders, playerPowerSend
+from powerUpManager import powerUpManager, POWER_UPS
 
 import api
 
@@ -62,9 +63,11 @@ class MyPlayerBrain(object):
         self.companies = companies
         self.passengers = passengers
         self.client = client
-        self.stores = stores
-        self.powerUpDeck = powerUpDeck
-        self.powerUpHand = []
+        self.stores = stores 
+        self.powerUpManager = powerUpManager(self, powerUpDeck)
+        self.powerUpHand = self.powerUpManager.hand
+        self.powerUpDeck = self.powerUpManager.deck
+        print self.powerUpManager
         self.myPassenger = None
         self.MAX_TRIPS_BEFORE_REFILL = 3
 
@@ -235,7 +238,11 @@ class MyPlayerBrain(object):
         return path
     
     def maybePlayPowerUp(self):
-        if len(self.powerUpHand) is not 0 and rand.randint(0, 50) < 30:
+#        print 'deck: ', self.powerUpManager.deck
+#        print 'left: ', len(self.powerUpManager.deck)
+#        print 'len hand: ', len(self.powerUpManager.hand)
+
+        if len(self.powerUpManager.hand) is not 0 and rand.randint(0, 50) < 30:
             return
         # not enough, draw
         if len(self.powerUpHand) < self.me.maxCardsInHand and len(self.powerUpDeck) > 0:
@@ -243,20 +250,20 @@ class MyPlayerBrain(object):
                 if(len(self.powerUpHand) == self.me.maxCardsInHand):
                     break
                 # select a card
-                self.powerUpDeck.remove(card)
-                self.powerUpHand.append(card)
-                playerPowerSend(self, "DRAW", card)
-            return
+                self.powerUpManager.drawPowerUp(card.card, card.passenger, card.company)
+            return          
         
         # can we play one?
-        okToPlayHand = filter(lambda p: p.okToPlay, self.powerUpHand)
+        okToPlayHand = filter(lambda p: p.okToPlay, self.powerUpManager.hand)
+ #       print 'oktoplay: ', okToPlayHand
         if len(okToPlayHand) == 0:
             return
         powerUp = okToPlayHand[0]
         
         # 10% discard, 90% play
         if rand.randint(1, 10) == 1:
-            playerPowerSend(self, "DISCARD", powerUp)
+            print 'Discarding card...'
+            self.powerUpManager.discardCard(powerUp)
         else:
             if powerUp.card == "MOVE_PASSENGER":
                 powerUp.passenger = rand.choice(filter(lambda p: p.car is None, self.passengers))
@@ -266,9 +273,8 @@ class MyPlayerBrain(object):
                     return
                 powerUp.player = rand.choice(playersWithPassengers)
 
-            playerPowerSend(self, "PLAY", powerUp)
+            self.powerUpManager.playPowerUp(powerUp.card, powerUp.passenger, powerUp.company)
             print "Playing powerup " + powerUp.card
-        self.powerUpHand.remove(powerUp)
         
         return
     

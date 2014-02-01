@@ -1,24 +1,22 @@
 from framework import playerPowerSend
-
-POWER_UPS = ('MOVE_PASSENGER', 'CHANGE_DESTINATION', 
-             'MULT_DELIVERY_QUARTER_SPEED', 'ALL_OTHER_CARS_QUARTER_SPEED',
-             'STOP_CAR', 'RELOCATE_ALL_CARS', 'RELOCATE_ALL_PASSENGERS', 
-             'MULT_DELIVERING_PASSENGER', 'MULT_DELIVER_AT_COMPANY')
+from api.units import CARD as POWER_UPS
 
 class powerUpManager(object):
     def __init__(self, brain, powerUpDeck):
         self.brain = brain
-        self.cardsLeft = len(powerUpDeck)
         self.hand = []
-        self.deck = dict(zip(POWER_UPS, [[] for i in len(POWER_UPS)]))
+        self.deck = powerUpDeck
+        self.deckDict = dict(zip(POWER_UPS, ([] for i in range(len(POWER_UPS)))))
         self.mult_passengers = []
         self.mult_companies = []
 
+        print self.deckDict
+
         for card in powerUpDeck:
-            deck[card.card].append(card)
-        for card in deck['MULT_DELIVERING_PASSENGER']:
+            self.deckDict[card.card].append(card)
+        for card in self.deckDict['MULT_DELIVERING_PASSENGER']:
             self.mult_passengers.append(card.passenger)
-        for card in deck['MULT_DELIVER_AT_COMPANY']:
+        for card in self.deckDict['MULT_DELIVER_AT_COMPANY']:
             self.mult_companies.append(card.company)
 
     def playPowerUp(self, powerUp, passenger=None, player=None, company=None):
@@ -30,13 +28,21 @@ class powerUpManager(object):
             return
 
         if powerUp == 'MULT_DELIVERING_PASSENGER':
-            card = next([i for i in powers if i.passenger == passenger], None)
+            card = None
+            for power in powers:
+                if power.passenger == passenger:
+                    card = power
+                    break
             if not card:
                 return
             self.playCard(card)
             return
         elif powerUp == 'MULT_DELIVER_AT_COMPANY':
-            card = next([i for i in powers if i.company == company], None)
+            card = None
+            for power in powers:
+                if power.passenger == passenger:
+                    card = power
+                    break
             if not card:
                 return
             self.playCard(card)
@@ -57,18 +63,26 @@ class powerUpManager(object):
         Attempt to draw the specified power up. If it is not in the deck,
         returns False, else True.
         '''
-        powers = deck[powerUp]
+        powers = self.deckDict[powerUp]
         if not powers:
             return False
 
         if powerUp == 'MULT_DELIVERING_PASSENGER':
-            card = next(i for i in powers if i.passenger == passenger, None)
+            card = None
+            for power in powers:
+                if power.passenger == passenger:
+                    card = power
+                    break
             if not card:
                 return False
             self.drawCard(card)
             return True
         elif powerUp == 'MULT_DELIVER_AT_COMPANY':
-            card = next(i for i in powers if i.company == company, None)
+            card = None
+            for power in powers:
+                if power.passenger == passenger:
+                    card = power
+                    break
             if not card:
                 return False
             self.drawCard(card)
@@ -96,8 +110,8 @@ class powerUpManager(object):
         '''
         Draw the specified card from our deck.
         '''
+        print 'Drawing card: ', card.card
         playerPowerSend(self.brain, "DRAW", card)
-        self.hand.append(card)
         self.removeCardFromDeck(card)
 
     def removeCardFromHand(self, card):
@@ -107,9 +121,9 @@ class powerUpManager(object):
         '''
         Remove the specified card from our deck.
         '''
-        self.deck[card.card].remove(card)
+        self.deckDict[card.card].remove(card)
+        self.deck.remove(card)
         if card.card == 'MULT_DELIVERING_PASSENGER':
-            mult_passengers.remove(card.passenger)
+            self.mult_passengers.remove(card.passenger)
         elif card.card == 'MULT_DELIVER_AT_COMPANY':
-            mult_companies.remove(card.company)
-        self.cardsLeft -= 1
+            self.mult_companies.remove(card.company)
