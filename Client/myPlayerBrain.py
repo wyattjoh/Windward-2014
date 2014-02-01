@@ -32,6 +32,8 @@ class MyPlayerBrain(object):
         except IOError:
             avatar = None # avatar is optional
         self.avatar = avatar
+
+        self.coffee_lock = False
     
     def setup(self, gMap, me, allPlayers, companies, passengers, client, stores, powerUpDeck, framework):
         """
@@ -108,24 +110,7 @@ class MyPlayerBrain(object):
             
             self.displayStatus(status, playerStatus)
             
-            # coffee store override
-            if(status == "PASSENGER_DELIVERED_AND_PICKED_UP" or status == "PASSENGER_DELIVERED" or status == "PASSENGER_ABANDONED"):
-                if(self.me.limo.coffeeServings <= 0):
-                    closest_store = self.findClosestStore()
-                    ptDest = closest_store['destination']
-                    path = closest_store['path']
-                    pickup = []
-            elif(status == "PASSENGER_REFUSED_NO_COFFEE" or status == "PASSENGER_DELIVERED_AND_PICK_UP_REFUSED"):
-                closest_store = self.findClosestStore()
-                ptDest = closest_store['destination']
-                path = closest_store['path']
-                pickup = []
-            elif(status == "COFFEE_STORE_CAR_RESTOCKED"):
-                pickup = self.allPickups(self.me, self.passengers)
-                if len(pickup) != 0:
-                    ptDest = pickup[0].lobby.busStop
-            
-            if path is None:
+            if not self.coffee_lock:
                 # get passengers
                 if (status == "PASSENGER_NO_ACTION" or status == "NO_PATH"):
                     if self.me.limo.passenger is None:
@@ -144,6 +129,26 @@ class MyPlayerBrain(object):
                       status == "PASSENGER_PICKED_UP"):
                     pickup = self.allPickups(self.me, self.passengers)
                     ptDest = self.me.limo.passenger.destination.busStop
+
+            # coffee store override
+            if(status == "PASSENGER_DELIVERED_AND_PICKED_UP" or status == "PASSENGER_DELIVERED" or status == "PASSENGER_ABANDONED"):
+                if(self.me.limo.coffeeServings <= 0):
+                    closest_store = self.findClosestStore()
+                    ptDest = closest_store['destination']
+                    path = closest_store['path']
+                    pickup = []
+                    self.coffee_lock = True
+            elif(status == "PASSENGER_REFUSED_NO_COFFEE" or status == "PASSENGER_DELIVERED_AND_PICK_UP_REFUSED"):
+                closest_store = self.findClosestStore()
+                ptDest = closest_store['destination']
+                path = closest_store['path']
+                pickup = []
+                self.coffee_lock = True
+            elif(status == "COFFEE_STORE_CAR_RESTOCKED"):
+                self.coffee_lock = False
+                pickup = self.allPickups(self.me, self.passengers)
+                if len(pickup) != 0:
+                    ptDest = pickup[0].lobby.busStop
 
             
             if(ptDest == None):
@@ -169,8 +174,9 @@ class MyPlayerBrain(object):
         return min(destination_paths, key=lambda x: x['distance'])
 
     def findClosestStore(self):
-        print "COFFEE <--------------------------"
-        return self.findClosest(self.stores)
+        closest_store = self.findClosest(self.stores)
+        print "COFFEE <-------------------------- %d moves away" % closest_store['distance']
+        return closest_store
 
     def displayOrders(self, ptDest):
         msg = None
