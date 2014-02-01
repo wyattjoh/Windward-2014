@@ -131,8 +131,10 @@ class MyPlayerBrain(object):
                     pickup = self.allPickups(self.me, self.passengers)
                     ptDest = pickup[0].lobby.busStop
                 elif  status == "PASSENGER_REFUSED_ENEMY":
-                    ptDest = rand.choice(filter(lambda c: c != self.me.limo.passenger.destination,
-                        self.companies)).busStop
+                    all_but_current = filter(lambda c: c != self.me.limo.passenger.destination, self.companies)
+                    closest_next = self.findClosest(all_but_current)
+                    ptDest = closest_next['destination']
+                    path = closest_next['path']
                 elif (status == "PASSENGER_DELIVERED_AND_PICKED_UP" or
                       status == "PASSENGER_PICKED_UP"):
                     pickup = self.allPickups(self.me, self.passengers)
@@ -164,6 +166,7 @@ class MyPlayerBrain(object):
                     path = closest_store['path']
                     self.updateCoffeeState(True, 2, -1)
                 else:
+                    print "<--------- COFFEE too far.. Will get it later"
                     self.updateCoffeeState(False, 0, -1)
 
             if(ptDest == None):
@@ -184,7 +187,7 @@ class MyPlayerBrain(object):
         if type(ptDest) is api.map.CoffeeStore:
             busStop = ptDest.busStop
         else:
-            busStop = ptDest.lobby.busStop
+            busStop = ptDest.busStop
 
         path = self.calculatePathPlus1(self.me, busStop)
         return {'path': path, 'distance': len(path) - 1, 'destination': busStop}
