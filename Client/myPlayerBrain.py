@@ -324,23 +324,23 @@ class MyPlayerBrain(object):
         if self.me.limo.passenger is not None and self.me.limo.passenger.pointsDelivered > 1:
             for player in self.players:
                 if len(player.passengersDelivered) == 7:
-                    # ALL_OTHER_CARS_1/4
+                    self.powerUpManager.playPowerUp('ALL_OTHER_CARS_QUARTER_SPEED')
 
                 if player.limo.passenger is not None:
                     if player.limo.passenger in self.me.limo.passenger.enemies:
                         if player.limo.passenger.destination == self.me.limo.passenger.destination:
                             # IF STOP_CAR
-                                # STOP_CAR
+                                self.powerUpManager.playPowerUp('STOP_CAR', player=player.guid)
                             # ELSE
-                                # CHANGE_DESTINATION
+                                self.powerUpManager.playPowerUp('CHANGE_DESTINATION', player=player.guid)
 
         # CHECK: RELOCATE_ALL_CARS
         if self.limo.passenger is None:
             if self.closest_person['destination'].pointsDelivered == 1:
-                # RELOCATE_ALL_CARS
+                self.powerUpManager.playPowerUp('RELOCATE_ALL_CARS')
 
                 if self.coffee_lock:
-                    # RELOCATE_ALL_PASSENGERS
+                    self.powerUpManager.playPowerUp('RELOCATE_ALL_PASSENGERS')
 
 
 
