@@ -125,7 +125,7 @@ class MyPlayerBrain(object):
                 if len(pickup) != 0:
                     ptDest = pickup[0].lobby.busStop
             
-            if path is None or len(pickup) is 0:
+            if path is None:
                 # get passengers
                 if (status == "PASSENGER_NO_ACTION" or status == "NO_PATH"):
                     if self.me.limo.passenger is None:
