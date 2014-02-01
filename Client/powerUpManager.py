@@ -21,6 +21,29 @@ class powerUpManager(object):
         for card in deck['MULT_DELIVER_AT_COMPANY']:
             self.mult_companies.append(card.company)
 
+
+    def playCard(self, card):
+        '''
+        Play the specified card and remove it from our deck.
+        '''
+        playerPowerSend(self.brain, "PLAY", card)
+        self.removeCardFromHand(card)
+
+    def discardCard(self, card):
+        '''
+        Discard the specified card and remove it from our deck.
+        '''
+        playerPowerSend(self.brain, "DISCARD", card)
+        self.removeCardFromHand(card)
+
+    def drawCard(self, card):
+        '''
+        Draw the specified card from our deck.
+        '''
+        playerPowerSend(self.brain, "DRAW", card)
+        self.hand.append(card)
+        self.removeCardFromDeck(card)
+
     def removeCardFromHand(self, card):
         self.hand.remove(card)
 
