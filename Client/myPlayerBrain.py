@@ -366,7 +366,7 @@ class MyPlayerBrain(object):
                 if enemy.car == None:
                     eDist = eDist + self.distanceCalc(p.lobby.busStop, enemy.lobby.busStop)
                 else:
-                    eDist = eDist + (2*self.distanceCalc(p.lobby.busStop, enemy.car.tilePosition))
+                    eDist = eDist + (3 * self.distanceCalc(p.lobby.busStop, enemy.car.tilePosition))
         return eDist
     
     def calcPriority(self, me, pickup):
