@@ -108,39 +108,43 @@ class MyPlayerBrain(object):
             
             self.displayStatus(status, playerStatus)
             
-            
-            if (status == "PASSENGER_NO_ACTION" or status == "NO_PATH"):
-                if self.me.limo.passenger is None:
-                    pickup = self.allPickups(self.me, self.passengers)
-                    ptDest = pickup[0].lobby.busStop
-                else:
-                    ptDest = self.me.limo.passenger.destination.busStop
-            elif (status == "PASSENGER_DELIVERED" or
-                  status == "PASSENGER_ABANDONED"):
-                pickup = self.allPickups(self.me, self.passengers)
-                ptDest = pickup[0].lobby.busStop
-            elif  status == "PASSENGER_REFUSED_ENEMY":
-                ptDest = rand.choice(filter(lambda c: c != self.me.limo.passenger.destination,
-                    self.companies)).busStop
-            elif (status == "PASSENGER_DELIVERED_AND_PICKED_UP" or
-                  status == "PASSENGER_PICKED_UP"):
-                pickup = self.allPickups(self.me, self.passengers)
-                ptDest = self.me.limo.passenger.destination.busStop
-                
             # coffee store override
             if(status == "PASSENGER_DELIVERED_AND_PICKED_UP" or status == "PASSENGER_DELIVERED" or status == "PASSENGER_ABANDONED"):
                 if(self.me.limo.coffeeServings <= 0):
                     closest_store = self.findClosestStore()
                     ptDest = closest_store['destination']
                     path = closest_store['path']
+                    pickup = []
             elif(status == "PASSENGER_REFUSED_NO_COFFEE" or status == "PASSENGER_DELIVERED_AND_PICK_UP_REFUSED"):
                 closest_store = self.findClosestStore()
                 ptDest = closest_store['destination']
                 path = closest_store['path']
+                pickup = []
             elif(status == "COFFEE_STORE_CAR_RESTOCKED"):
                 pickup = self.allPickups(self.me, self.passengers)
                 if len(pickup) != 0:
                     ptDest = pickup[0].lobby.busStop
+            
+            if path is None and len(pickup) is 0:
+                # get passengers
+                if (status == "PASSENGER_NO_ACTION" or status == "NO_PATH"):
+                    if self.me.limo.passenger is None:
+                        pickup = self.allPickups(self.me, self.passengers)
+                        ptDest = pickup[0].lobby.busStop
+                    else:
+                        ptDest = self.me.limo.passenger.destination.busStop
+                elif (status == "PASSENGER_DELIVERED" or
+                      status == "PASSENGER_ABANDONED"):
+                    pickup = self.allPickups(self.me, self.passengers)
+                    ptDest = pickup[0].lobby.busStop
+                elif  status == "PASSENGER_REFUSED_ENEMY":
+                    ptDest = rand.choice(filter(lambda c: c != self.me.limo.passenger.destination,
+                        self.companies)).busStop
+                elif (status == "PASSENGER_DELIVERED_AND_PICKED_UP" or
+                      status == "PASSENGER_PICKED_UP"):
+                    pickup = self.allPickups(self.me, self.passengers)
+                    ptDest = self.me.limo.passenger.destination.busStop
+
             
             if(ptDest == None):
                 return
