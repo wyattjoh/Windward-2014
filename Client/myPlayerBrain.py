@@ -262,5 +262,38 @@ class MyPlayerBrain(object):
                                                 p != me.limo.passenger and
                                                 p.car is None and
                                                 p.lobby is not None and p.destination is not None)]
-            rand.shuffle(pickup)
-            return pickup
+            pickuporder = self.calcPriority(me, pickup)
+            #rand.shuffle(pickup)
+            return pickuporder
+        
+    def distanceCalc(self, from_pos, to_pos):
+        path = simpleAStar.calculatePath(self.gameMap, from_pos, to_pos)
+        pathlen = len(path) - 1
+        return pathlen
+    
+    def calcEnemies(self, me, p):
+        eDist = 0
+        for enemy in p.enemies:
+            if enemy.destination == p.destination:
+                if enemy.car == None:
+                    eDist = eDist + self.distanceCalc(p.lobby.busStop, enemy.lobby.busStop)
+                else:
+                    eDist = eDist + (2*self.distanceCalc(p.lobby.busStop, enemy.car.tilePosition))
+        return eDist
+    
+    def calcPriority(self, me, pickup):
+        pickuporder = []
+        priority = {}
+        pointmap = {1:5, 2:4, 3:3}
+        for p in pickup:
+            priority[p] = (3*(self.distanceCalc(p.lobby.busStop, me.limo.tilePosition) + self.distanceCalc(p.lobby.busStop, p.destination.busStop)) + self.calcEnemies(me, p)) * pointmap[p.pointsDelivered]
+        while len(priority)>0:
+            close = min(priority.values())
+            for person in priority:
+                if priority[person] == close:
+                    pickuporder.append(person)
+                    priority.pop(person)
+                    break
+        return pickuporder
+        
+    
