@@ -20,3 +20,17 @@ class powerUpManager(object):
             self.mult_passengers.append(card.passenger)
         for card in deck['MULT_DELIVER_AT_COMPANY']:
             self.mult_companies.append(card.company)
+
+    def removeCardFromHand(self, card):
+        self.hand.remove(card)
+
+    def removeCardFromDeck(self, card):
+        '''
+        Remove the specified card from our deck.
+        '''
+        self.deck[card.card].remove(card)
+        if card.card == 'MULT_DELIVERING_PASSENGER':
+            mult_passengers.remove(card.passenger)
+        elif card.card == 'MULT_DELIVER_AT_COMPANY':
+            mult_companies.remove(card.company)
+        self.cardsLeft -= 1
