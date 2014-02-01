@@ -36,8 +36,7 @@ class MyPlayerBrain(object):
             avatar = None # avatar is optional
         self.avatar = avatar
 
-        self.coffee_lock = False
-        self.coffee_state = 0
+
     
     def setup(self, gMap, me, allPlayers, companies, passengers, client, stores, powerUpDeck, framework):
         """
@@ -70,6 +69,8 @@ class MyPlayerBrain(object):
         print self.powerUpManager
         self.myPassenger = None
         self.MAX_TRIPS_BEFORE_REFILL = 3
+        self.coffee_lock = False
+        self.coffee_state = 0
 
         self.pickup = pickup = self.allPickups(me, passengers)
 
@@ -110,6 +111,8 @@ class MyPlayerBrain(object):
             if playerStatus != self.me:
                 return
 
+            self.closest_person = self.findClosest(all_but_current)
+
             ptDest = None
             pickup = []
 
@@ -117,6 +120,7 @@ class MyPlayerBrain(object):
             
             if status == "UPDATE":
                 self.maybePlayPowerUp()
+                self.updateStategy()
                 return
             
             self.displayStatus(status, playerStatus)
@@ -316,6 +320,31 @@ class MyPlayerBrain(object):
             print (msg)
         return
     
+    def updateStategy(self):
+        if self.me.limo.passenger is not None and self.me.limo.passenger.pointsDelivered > 1:
+            for player in self.players:
+                if len(player.passengersDelivered) == 7:
+                    # ALL_OTHER_CARS_1/4
+
+                if player.limo.passenger is not None:
+                    if player.limo.passenger in self.me.limo.passenger.enemies:
+                        if player.limo.passenger.destination == self.me.limo.passenger.destination:
+                            # IF STOP_CAR
+                                # STOP_CAR
+                            # ELSE
+                                # CHANGE_DESTINATION
+
+        # CHECK: RELOCATE_ALL_CARS
+        if self.limo.passenger is None:
+            if self.closest_person['destination'].pointsDelivered == 1:
+                # RELOCATE_ALL_CARS
+
+                if self.coffee_lock:
+                    # RELOCATE_ALL_PASSENGERS
+
+
+
+
     def allPickups (self, me, passengers):
             pickup = [p for p in passengers if (not p in me.passengersDelivered and
                                                 p != me.limo.passenger and
