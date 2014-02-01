@@ -327,7 +327,7 @@ class MyPlayerBrain(object):
                 if player.limo.passenger is not None:
                     if player.limo.passenger in self.me.limo.passenger.enemies:
                         if player.limo.passenger.destination == self.me.limo.passenger.destination:
-                            if self.powerUpManager.deckDict['STOP_CAR']:
+                            if self.powerUpManager.cardHasBeenPlayed('STOP_CAR'):
                                 self.powerUpManager.playPowerUp('STOP_CAR', player=player.guid)
                             else:
                                 self.powerUpManager.playPowerUp('CHANGE_DESTINATION', player=player.guid)
