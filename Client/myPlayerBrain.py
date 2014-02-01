@@ -13,6 +13,8 @@ import traceback
 import simpleAStar
 from framework import sendOrders, playerPowerSend
 
+import api
+
 NAME = "BAM!'); DROP TABLE 'Teams';--"
 SCHOOL = "University of Alberta"
 
@@ -72,6 +74,11 @@ class MyPlayerBrain(object):
 
         path = self.calculatePathPlus1(me, pickup[0].lobby.busStop)
         sendOrders(self, "ready", path, pickup)
+
+    def updateCoffeeState(self, lock, state, distance_mod):
+        self.coffee_lock = lock
+        self.coffee_state = state
+        self.coffee_dist = distance_mod
 
     def gameStatus(self, status, playerStatus):
         """
@@ -134,25 +141,30 @@ class MyPlayerBrain(object):
             # coffee store override
             if(status == "PASSENGER_DELIVERED_AND_PICKED_UP" or status == "PASSENGER_DELIVERED" or status == "PASSENGER_ABANDONED"):
                 if(self.me.limo.coffeeServings <= 0):
-                    self.coffee_lock = True
-                    self.coffee_state = 1
+                    self.updateCoffeeState(True, 1, -1)
+                elif (self.me.limo.coffeeServings == 1 and bool(rand.getrandbits(1))):
+                    self.updateCoffeeState(True, 1, 15)
             elif(status == "PASSENGER_REFUSED_NO_COFFEE" or status == "PASSENGER_DELIVERED_AND_PICK_UP_REFUSED"):
-                self.coffee_lock = True
-                self.coffee_state = 1
+                self.updateCoffeeState(True, 1, -1)
             elif(status == "COFFEE_STORE_CAR_RESTOCKED"):
-                self.coffee_lock = False
-                self.coffee_state = 0
+                self.updateCoffeeState(False, 0, -1)
                 pickup = self.allPickups(self.me, self.passengers)
                 if len(pickup) != 0:
                     ptDest = pickup[0].lobby.busStop
 
             if self.coffee_lock and self.coffee_state is 1:
                 print "<--------- COFFEE LOCK IN EFFECT :D"
+                
                 pickup = []
                 closest_store = self.findClosestStore()
-                ptDest = closest_store['destination']
-                path = closest_store['path']
-                self.coffee_state = 2
+                
+                # distance mod
+                if self.coffee_dist == -1 or closest_store['distance'] < self.coffee_dist:
+                    ptDest = closest_store['destination']
+                    path = closest_store['path']
+                    self.updateCoffeeState(True, 2, -1)
+                else:
+                    self.updateCoffeeState(False, 0, -1)
 
             if(ptDest == None):
                 return
@@ -169,8 +181,13 @@ class MyPlayerBrain(object):
             raise e
 
     def computeDistance(self, ptDest):
-        path = self.calculatePathPlus1(self.me, ptDest.busStop)
-        return {'path': path, 'distance': len(path), 'destination': ptDest.busStop}
+        if type(ptDest) is api.map.CoffeeStore:
+            busStop = ptDest.busStop
+        else:
+            busStop = ptDest.lobby.busStop
+
+        path = self.calculatePathPlus1(self.me, busStop)
+        return {'path': path, 'distance': len(path) - 1, 'destination': busStop}
 
     def findClosest(self, destinations):
         destination_paths = [self.computeDistance(destination) for destination in destinations]
