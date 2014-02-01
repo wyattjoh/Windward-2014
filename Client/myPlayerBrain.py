@@ -34,6 +34,7 @@ class MyPlayerBrain(object):
         self.avatar = avatar
 
         self.coffee_lock = False
+        self.coffee_state = 0
     
     def setup(self, gMap, me, allPlayers, companies, passengers, client, stores, powerUpDeck, framework):
         """
@@ -133,25 +134,25 @@ class MyPlayerBrain(object):
             # coffee store override
             if(status == "PASSENGER_DELIVERED_AND_PICKED_UP" or status == "PASSENGER_DELIVERED" or status == "PASSENGER_ABANDONED"):
                 if(self.me.limo.coffeeServings <= 0):
-                    closest_store = self.findClosestStore()
-                    ptDest = closest_store['destination']
-                    path = closest_store['path']
-                    pickup = []
                     self.coffee_lock = True
+                    self.coffee_state = 1
             elif(status == "PASSENGER_REFUSED_NO_COFFEE" or status == "PASSENGER_DELIVERED_AND_PICK_UP_REFUSED"):
-                closest_store = self.findClosestStore()
-                ptDest = closest_store['destination']
-                path = closest_store['path']
-                pickup = []
                 self.coffee_lock = True
+                self.coffee_state = 1
             elif(status == "COFFEE_STORE_CAR_RESTOCKED"):
                 self.coffee_lock = False
+                self.coffee_state = 0
                 pickup = self.allPickups(self.me, self.passengers)
                 if len(pickup) != 0:
                     ptDest = pickup[0].lobby.busStop
 
-            if self.coffee_lock:
+            if self.coffee_lock and self.coffee_state is 1:
                 print "<--------- COFFEE LOCK IN EFFECT :D"
+                pickup = []
+                closest_store = self.findClosestStore()
+                ptDest = closest_store['destination']
+                path = closest_store['path']
+                self.coffee_state = 2
 
             if(ptDest == None):
                 return
