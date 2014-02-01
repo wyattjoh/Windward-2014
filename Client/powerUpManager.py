@@ -30,13 +30,13 @@ class powerUpManager(object):
             return
 
         if powerUp == 'MULT_DELIVERING_PASSENGER':
-            card = next(i for i in powers if i.passenger == passenger, None)
+            card = next([i for i in powers if i.passenger == passenger], None)
             if not card:
                 return
             self.playCard(card)
             return
         elif powerUp == 'MULT_DELIVER_AT_COMPANY':
-            card = next(i for i in powers if i.company == company, None1)
+            card = next([i for i in powers if i.company == company], None1)
             if not card:
                 return
             self.playCard(card)
