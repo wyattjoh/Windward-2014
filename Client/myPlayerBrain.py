@@ -119,7 +119,6 @@ class MyPlayerBrain(object):
             path = None
             
             if status == "UPDATE":
-                self.maybePlayPowerUp()
                 self.updateStategy()
                 return
             
@@ -264,21 +263,17 @@ class MyPlayerBrain(object):
             return
         powerUp = okToPlayHand[0]
         
-        # 10% discard, 90% play
-        if rand.randint(1, 10) == 1:
-            print 'Discarding card...'
-            self.powerUpManager.discardCard(powerUp)
-        else:
-            if powerUp.card == "MOVE_PASSENGER":
-                powerUp.passenger = rand.choice(filter(lambda p: p.car is None, self.passengers))
-            if powerUp.card == "CHANGE_DESTINATION" or powerUp.card == "STOP_CAR":
-                playersWithPassengers = filter(lambda p: p.guid != self.me.guid and p.limo.passenger is not None, self.players)
-                if len(playersWithPassengers) == 0:
-                    return
-                powerUp.player = rand.choice(playersWithPassengers)
 
-            self.powerUpManager.playPowerUp(powerUp.card, powerUp.passenger, powerUp.company)
-            print "Playing powerup " + powerUp.card
+        if powerUp.card == "MOVE_PASSENGER":
+            powerUp.passenger = rand.choice(filter(lambda p: p.car is None, self.passengers))
+        if powerUp.card == "CHANGE_DESTINATION" or powerUp.card == "STOP_CAR":
+            playersWithPassengers = filter(lambda p: p.guid != self.me.guid and p.limo.passenger is not None, self.players)
+            if len(playersWithPassengers) == 0:
+                return
+            powerUp.player = rand.choice(playersWithPassengers)
+
+        self.powerUpManager.playPowerUp(powerUp.card, powerUp.passenger, powerUp.company)
+        print "Playing powerup " + powerUp.card
         
         return
     
@@ -320,6 +315,9 @@ class MyPlayerBrain(object):
             print (msg)
         return
     
+    def drawCards(self):
+
+
     def updateStategy(self):
         if self.me.limo.passenger is not None and self.me.limo.passenger.pointsDelivered > 1:
             for player in self.players:
