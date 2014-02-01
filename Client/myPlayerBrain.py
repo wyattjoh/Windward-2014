@@ -150,7 +150,9 @@ class MyPlayerBrain(object):
                 if len(pickup) != 0:
                     ptDest = pickup[0].lobby.busStop
 
-            
+            if self.coffee_lock:
+                print "<--------- COFFEE LOCK IN EFFECT :D"
+
             if(ptDest == None):
                 return
             
