@@ -271,10 +271,11 @@ class MyPlayerBrain(object):
                 return
             powerUp.player = rand.choice(playersWithPassengers)
 
+        if powerUp.card == "MULT_DELIVERING_PASSENGER" or powerUp.card == "MULT_DELIVER_AT_COMPANY":
+            return
+
         self.powerUpManager.playPowerUp(powerUp.card, powerUp.passenger, powerUp.company)
         print "Playing powerup " + powerUp.card
-        
-        return
     
     # A power-up was played. It may be an error message, or success.
     def powerUpStatus(self, status, playerPowerUp, cardPlayed):
