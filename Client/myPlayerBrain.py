@@ -391,7 +391,10 @@ class MyPlayerBrain(object):
         priority = {}
         pointmap = {1:5, 2:4, 3:4}
         for p in pickup:
-            priority[p] = (3*(self.distanceCalc(p.lobby.busStop, me.limo.tilePosition) + self.distanceCalc(p.lobby.busStop, p.destination.busStop)) + self.calcEnemies(me, p)) * pointmap[p.pointsDelivered]
+            if (len(me.passengersDelivered) == 7):
+                priority[p] = self.distanceCalc(p.lobby.busStop, me.limo.tilePosition) + self.distanceCalc(p.lobby.busStop, p.destination.busStop)
+            else:
+                priority[p] = (3*(self.distanceCalc(p.lobby.busStop, me.limo.tilePosition) + self.distanceCalc(p.lobby.busStop, p.destination.busStop)) + self.calcEnemies(me, p)) * pointmap[p.pointsDelivered]
         while len(priority)>0:
             close = min(priority.values())
             for person in priority:
