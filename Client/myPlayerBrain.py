@@ -111,14 +111,13 @@ class MyPlayerBrain(object):
             if playerStatus != self.me:
                 return
 
-            self.closest_person = self.findClosest(all_but_current)
-
             ptDest = None
             pickup = []
 
             path = None
             
             if status == "UPDATE":
+                self.drawCards()
                 self.updateStategy()
                 return
             
@@ -316,7 +315,19 @@ class MyPlayerBrain(object):
         return
     
     def drawCards(self):
+        if self.powerUpManager.cardIsInDeck('RELOCATE_ALL_CARS') and self.powerUpManager.cardIsInDeck('RELOCATE_ALL_PASSENGERS'):
+            self.powerUpManager.drawPowerUp('RELOCATE_ALL_CARS')
+            self.powerUpManager.drawPowerUp('RELOCATE_ALL_PASSENGERS')
 
+        elif self.powerUpManager.cardIsInDeck('CHANGE_DESTINATION') and self.powerUpManager.cardIsInDeck('STOP_CAR'):
+            self.powerUpManager.drawPowerUp('CHANGE_DESTINATION')
+            self.powerUpManager.drawPowerUp('STOP_CAR')
+
+        elif self.powerUpManager.cardIsInDeck('ALL_OTHER_CARS_QUARTER_SPEED'):
+            self.powerUpManager.drawPowerUp('ALL_OTHER_CARS_QUARTER_SPEED')
+
+        else:
+            self.maybePlayPowerUp()
 
     def updateStategy(self):
         if self.me.limo.passenger is not None and self.me.limo.passenger.pointsDelivered > 1:
@@ -332,8 +343,17 @@ class MyPlayerBrain(object):
                             else:
                                 self.powerUpManager.playPowerUp('CHANGE_DESTINATION', player=player.guid)
 
-        if self.limo.passenger is None:
-            if self.closest_person['destination'].pointsDelivered == 1:
+        if self.me.limo.passenger is None:
+            pickup = self.allPickups(self.me, self.passengers)
+            ptLobby = pickup[0].lobby
+            thePassenger = None
+
+            for passenger in self.passengers:
+                if passenger.lobby == ptLobby:
+                    thePassenger = passenger
+                    break
+
+            if thePassenger is not None and thePassenger.pointsDelivered == 1:
                 self.powerUpManager.playPowerUp('RELOCATE_ALL_CARS')
 
                 if self.coffee_lock:
